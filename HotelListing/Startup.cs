@@ -1,4 +1,5 @@
-﻿using HotelListing.Data;
+﻿using HotelListing.Configuratios;
+using HotelListing.Data;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.EntityFrameworkCore;
@@ -37,6 +38,8 @@ namespace HotelListing
                             .AllowAnyHeader();
                     });
             });
+
+            services.AddAutoMapper(typeof(MapperInitializer));
 
             services.AddSwaggerGen(c =>
             {
