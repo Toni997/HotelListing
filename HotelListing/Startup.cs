@@ -30,6 +30,9 @@ namespace HotelListing
                 options.UseSqlServer(Configuration.GetConnectionString("sqlConnection"));
             });
 
+            services.AddAuthentication();
+            services.ConfigureIdentity();
+
             services.AddCors(o =>
             {
                 o.AddPolicy("AllowAll",
