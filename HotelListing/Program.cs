@@ -1,4 +1,7 @@
 ﻿using System;
+using Autofac;
+using HotelListing.IRepository;
+using HotelListing.Repository;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Hosting;
 using Serilog;
@@ -10,6 +13,13 @@ namespace HotelListing
     {
         public static void Main(string[] args)
         {
+            // var containerBuilder = new ContainerBuilder();
+            // containerBuilder.RegisterType<UnitOfWork>().As<IUnitOfWork>();
+            //
+            // var container = containerBuilder.Build();
+            //
+            // var notificationService = container.Resolve<IUnitOfWork>();
+
             Log.Logger = new LoggerConfiguration().WriteTo.File(
                 path: @"C:\hotellistings\logs\log-.txt",
                 outputTemplate: "{Timestamp:yyyy-MM-dd HH:mm:ss.fff zzz} [{Level:u3}] {Message:lj}{NewLine}{Exception}",

@@ -6,7 +6,7 @@ using AutoMapper;
 using HotelListing.Data;
 using HotelListing.Models;
 
-namespace HotelListing.Configuratios
+namespace HotelListing.Configurations
 {
     public class MapperInitializer : Profile
     {
