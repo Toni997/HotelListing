@@ -29,21 +29,14 @@ namespace HotelListing.Controllers
         }
 
         [HttpGet]
+        [ResponseCache(Duration = 60)]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         public async Task<IActionResult> GetCountries([FromQuery] RequestParams requestParams)
         {
-            try
-            {
-                var countries = await _unitOfWork.Countries.GetPagedList(requestParams);
-                var results = _mapper.Map<IList<CountryDto>>(countries);
-                return Ok(results);
-            }
-            catch (Exception e)
-            {
-                _logger.LogError(e, $"Something went wrong in the {nameof(GetCountries)}");
-                return StatusCode(500, "Internal server error. Please try again later.");
-            }
+            var countries = await _unitOfWork.Countries.GetPagedList(requestParams);
+            var results = _mapper.Map<IList<CountryDto>>(countries);
+            return Ok(results);
         }
 
         [HttpGet("{id:int}", Name = "GetCountry")]
@@ -52,21 +45,15 @@ namespace HotelListing.Controllers
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         public async Task<IActionResult> GetCountry(int id)
         {
-            try
+            var country = await _unitOfWork.Countries.Get(c => c.Id == id, includes: new List<string> { "Hotels" });
+            var result = _mapper.Map<CountryDto>(country);
+
+            if (result == null)
             {
-                var country = await _unitOfWork.Countries.Get(c => c.Id == id, includes: new List<string> { "Hotels" });
-                var result = _mapper.Map<CountryDto>(country);
-                if (result == null)
-                {
-                    return NotFound();
-                }
-                return Ok(result);
+                return NotFound();
             }
-            catch (Exception e)
-            {
-                _logger.LogError(e, $"Something went wrong in the {nameof(GetCountry)}");
-                return StatusCode(500, "Internal server error. Please try again later.");
-            }
+
+            return Ok(result);
         }
 
         [Authorize(Roles = "User")]
@@ -84,19 +71,11 @@ namespace HotelListing.Controllers
                 return BadRequest(ModelState);
             }
 
-            try
-            {
-                var country = _mapper.Map<Country>(countryDto);
-                await _unitOfWork.Countries.Insert(country);
-                await _unitOfWork.Save();
+            var country = _mapper.Map<Country>(countryDto);
+            await _unitOfWork.Countries.Insert(country);
+            await _unitOfWork.Save();
 
-                return CreatedAtRoute("GetCountry", new { id = country.Id }, country);
-            }
-            catch (Exception e)
-            {
-                _logger.LogError(e, $"Something went wrong in the {nameof(CreateCountry)}");
-                return StatusCode(500, "Internal server error. Please try again later.");
-            }
+            return CreatedAtRoute("GetCountry", new { id = country.Id }, country);
         }
 
         [Authorize(Roles = "User")]
@@ -114,27 +93,19 @@ namespace HotelListing.Controllers
                 return BadRequest(ModelState);
             }
 
-            try
+            var country = await _unitOfWork.Countries.Get(c => c.Id == id);
+            if (country == null)
             {
-                var country = await _unitOfWork.Countries.Get(c => c.Id == id);
-                if (country == null)
-                {
-                    _logger.LogError($"Invalid UPDATE attempt in {nameof(UpdateCountry)}");
-                    return BadRequest(ModelState);
-                }
-
-                _mapper.Map(countryDto, country);
-
-                _unitOfWork.Countries.Update(country);
-                await _unitOfWork.Save();
-
-                return NoContent();
+                _logger.LogError($"Invalid UPDATE attempt in {nameof(UpdateCountry)}");
+                return BadRequest(ModelState);
             }
-            catch (Exception e)
-            {
-                _logger.LogError(e, $"Something went wrong in the {nameof(UpdateCountry)}");
-                return StatusCode(500, "Internal server error. Please try again later.");
-            }
+
+            _mapper.Map(countryDto, country);
+
+            _unitOfWork.Countries.Update(country);
+            await _unitOfWork.Save();
+
+            return NoContent();
         }
 
         [Authorize]
@@ -163,7 +134,6 @@ namespace HotelListing.Controllers
             await _unitOfWork.Save();
 
             return NoContent();
-
         }
     }
 }

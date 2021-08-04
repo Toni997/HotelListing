@@ -34,17 +34,9 @@ namespace HotelListing.Controllers
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         public async Task<IActionResult> GetHotels()
         {
-            try
-            {
-                var hotels = await _unitOfWork.Hotels.GetAll(includes: new List<string> { "Country" });
-                var results = _mapper.Map<IList<HotelDto>>(hotels);
-                return Ok(results);
-            }
-            catch (Exception e)
-            {
-                _logger.LogError(e, $"Something went wrong in the {nameof(GetHotels)}");
-                return StatusCode(500, "Internal server error. Please try again later.");
-            }
+            var hotels = await _unitOfWork.Hotels.GetAll(includes: new List<string> { "Country" });
+            var results = _mapper.Map<IList<HotelDto>>(hotels);
+            return Ok(results);
         }
 
         [HttpGet("{id:int}", Name = "GetHotel")]
@@ -53,21 +45,14 @@ namespace HotelListing.Controllers
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         public async Task<IActionResult> GetHotel(int id)
         {
-            try
+            var hotel = await _unitOfWork.Hotels.Get(h => h.Id == id, includes: new List<string> { "Country" });
+            var result = _mapper.Map<HotelDto>(hotel);
+            if (result == null)
             {
-                var hotel = await _unitOfWork.Hotels.Get(h => h.Id == id, includes: new List<string> { "Country" });
-                var result = _mapper.Map<HotelDto>(hotel);
-                if (result == null)
-                {
-                    return NotFound();
-                }
-                return Ok(result);
+                return NotFound();
             }
-            catch (Exception e)
-            {
-                _logger.LogError(e, $"Something went wrong in the {nameof(GetHotel)}");
-                return StatusCode(500, "Internal server error. Please try again later.");
-            }
+
+            return Ok(result);
         }
 
         [Authorize(Roles = "User")]
@@ -85,19 +70,11 @@ namespace HotelListing.Controllers
                 return BadRequest(ModelState);
             }
 
-            try
-            {
-                var hotel = _mapper.Map<Hotel>(hotelDto);
-                await _unitOfWork.Hotels.Insert(hotel);
-                await _unitOfWork.Save();
+            var hotel = _mapper.Map<Hotel>(hotelDto);
+            await _unitOfWork.Hotels.Insert(hotel);
+            await _unitOfWork.Save();
 
-                return CreatedAtRoute("GetHotel", new { id = hotel.Id }, hotel);
-            }
-            catch (Exception e)
-            {
-                _logger.LogError(e, $"Something went wrong in the {nameof(CreateHotel)}");
-                return StatusCode(500, "Internal server error. Please try again later.");
-            }
+            return CreatedAtRoute("GetHotel", new { id = hotel.Id }, hotel);
         }
 
         [Authorize(Roles = "User")]
@@ -115,27 +92,19 @@ namespace HotelListing.Controllers
                 return BadRequest(ModelState);
             }
 
-            try
+            var hotel = await _unitOfWork.Hotels.Get(h => h.Id == id);
+            if (hotel == null)
             {
-                var hotel = await _unitOfWork.Hotels.Get(h => h.Id == id);
-                if (hotel == null)
-                {
-                    _logger.LogError($"Invalid UPDATE attempt in {nameof(UpdateHotel)}");
-                    return BadRequest(ModelState);
-                }
-
-                _mapper.Map(hotelDto, hotel);
-
-                _unitOfWork.Hotels.Update(hotel);
-                await _unitOfWork.Save();
-
-                return NoContent();
+                _logger.LogError($"Invalid UPDATE attempt in {nameof(UpdateHotel)}");
+                return BadRequest(ModelState);
             }
-            catch (Exception e)
-            {
-                _logger.LogError(e, $"Something went wrong in the {nameof(UpdateHotel)}");
-                return StatusCode(500, "Internal server error. Please try again later.");
-            }
+
+            _mapper.Map(hotelDto, hotel);
+
+            _unitOfWork.Hotels.Update(hotel);
+            await _unitOfWork.Save();
+
+            return NoContent();
         }
 
         [Authorize]
@@ -164,7 +133,6 @@ namespace HotelListing.Controllers
             await _unitOfWork.Save();
 
             return NoContent();
-
         }
     }
 }
