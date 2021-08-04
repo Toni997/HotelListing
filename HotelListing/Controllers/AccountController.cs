@@ -23,8 +23,8 @@ namespace HotelListing.Controllers
         private readonly IMapper _mapper;
         private readonly IAuthManager _authManager;
 
-        public AccountController(UserManager<ApiUser> userManager, ILogger<AccountController> logger, IMapper mapper,
-            IAuthManager authManager)
+        public AccountController(UserManager<ApiUser> userManager,
+            ILogger<AccountController> logger, IMapper mapper, IAuthManager authManager)
         {
             _userManager = userManager;
             _logger = logger;
@@ -51,18 +51,16 @@ namespace HotelListing.Controllers
                 user.UserName = userDto.Email;
                 var result = await _userManager.CreateAsync(user, userDto.Password);
 
-                if (result.Succeeded)
+                if (!result.Succeeded)
                 {
-                    await _userManager.AddToRolesAsync(user, userDto.Roles);
-                    return Accepted();
+                    foreach (var error in result.Errors)
+                    {
+                        ModelState.AddModelError(error.Code, error.Description);
+                    }
+                    return BadRequest(ModelState);
                 }
-
-                foreach (var error in result.Errors)
-                {
-                    ModelState.AddModelError(error.Code, error.Description);
-                }
-
-                return BadRequest(ModelState);
+                await _userManager.AddToRolesAsync(user, userDto.Roles);
+                return Accepted();
             }
             catch (Exception e)
             {

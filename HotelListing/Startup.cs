@@ -48,6 +48,7 @@ namespace HotelListing
             });
 
             services.AddAutoMapper(typeof(MapperInitializer));
+
             services.AddTransient<IUnitOfWork, UnitOfWork>();
             services.AddScoped<IAuthManager, AuthManager>();
 
