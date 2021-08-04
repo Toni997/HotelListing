@@ -52,10 +52,9 @@ namespace HotelListing.Repository
             return await query.AsNoTracking().FirstOrDefaultAsync(expression);
         }
 
-        public async Task<T> Insert(T entity)
+        public async Task Insert(T entity)
         {
             await _db.AddAsync(entity);
-            return entity;
         }
 
         public async Task InsertRange(IEnumerable<T> entities)

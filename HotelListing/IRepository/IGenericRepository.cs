@@ -19,7 +19,7 @@ namespace HotelListing.IRepository
             List<string> includes = null
         );
 
-        Task<T> Insert(T entity);
+        Task Insert(T entity);
         Task InsertRange(IEnumerable<T> entities);
         Task Delete(int id);
         void DeleteRange(IEnumerable<T> entities);
