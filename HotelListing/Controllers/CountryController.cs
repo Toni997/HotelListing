@@ -29,7 +29,6 @@ namespace HotelListing.Controllers
         }
 
         [HttpGet]
-        [ResponseCache(Duration = 60)]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         public async Task<IActionResult> GetCountries([FromQuery] RequestParams requestParams)
